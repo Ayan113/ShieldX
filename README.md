@@ -6,6 +6,20 @@ ShieldX is a crypto fraud detection and compliance review app for single transac
 
 - App: https://shieldx-ten.vercel.app
 
+## Screenshots
+
+### Home
+
+![ShieldX Home](./assets/screenshots/shieldx-home.png)
+
+### Dashboard
+
+![ShieldX Dashboard](./assets/screenshots/shieldx-dashboard.png)
+
+### Fraud Rules Assistant
+
+![ShieldX Fraud Rules Assistant](./assets/screenshots/shieldx-rag.png)
+
 ## Features
 
 - Single transaction fraud analysis with fraud score, risk level, indicators, and recommendation
@@ -20,6 +34,11 @@ ShieldX is a crypto fraud detection and compliance review app for single transac
 - Pandas
 - Plotly
 - Vercel
+
+## Theme
+
+- Black-and-red UI with a darker dashboard visual system
+- Responsive single-page experience for desktop and mobile
 
 ## Local Setup
 

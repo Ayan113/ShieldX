@@ -1,15 +1,16 @@
 :root {
-  --bg: #f4f7fb;
-  --panel: #ffffff;
-  --ink: #0f172a;
-  --muted: #475569;
-  --line: #dbe4f0;
-  --brand: #0f766e;
-  --brand-dark: #134e4a;
-  --accent: #1d4ed8;
-  --danger: #b91c1c;
-  --safe: #166534;
-  --shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+  --bg: #050505;
+  --panel: #101010;
+  --panel-2: #171717;
+  --ink: #f5f5f5;
+  --muted: #b3b3b3;
+  --line: #2a2a2a;
+  --brand: #ef4444;
+  --brand-dark: #991b1b;
+  --accent: #7f1d1d;
+  --danger: #f87171;
+  --safe: #e5e7eb;
+  --shadow: 0 26px 60px rgba(0, 0, 0, 0.42);
 }
 
 * {
@@ -25,8 +26,9 @@ body {
   font-family: "IBM Plex Sans", sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(circle at top right, rgba(29, 78, 216, 0.12), transparent 25%),
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(239, 68, 68, 0.18), transparent 24%),
+    radial-gradient(circle at top left, rgba(127, 29, 29, 0.22), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 40%),
     var(--bg);
 }
 
@@ -43,9 +45,12 @@ body {
   align-items: end;
   padding: 36px;
   border-radius: 28px;
-  background: linear-gradient(135deg, #0f172a, #123b50 55%, #115e59);
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.24), transparent 24%),
+    linear-gradient(135deg, #090909, #140909 55%, #3f0a0a);
   color: white;
   box-shadow: var(--shadow);
+  border: 1px solid rgba(248, 113, 113, 0.16);
 }
 
 .hero h1,
@@ -76,7 +81,8 @@ body {
   min-width: 180px;
   padding: 20px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(248, 113, 113, 0.16);
   backdrop-filter: blur(10px);
 }
 
@@ -109,10 +115,10 @@ body {
   min-height: 44px;
   padding: 0 16px;
   border-radius: 999px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.12);
   text-decoration: none;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(16, 16, 16, 0.82);
   transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
@@ -124,8 +130,8 @@ button:hover {
 }
 
 .tab-bar .is-active {
-  background: #dbeafe;
-  border-color: #93c5fd;
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.88), rgba(239, 68, 68, 0.78));
+  border-color: rgba(248, 113, 113, 0.4);
 }
 
 .content-grid {
@@ -138,6 +144,7 @@ button:hover {
   border-radius: 24px;
   background: var(--panel);
   box-shadow: var(--shadow);
+  border: 1px solid rgba(248, 113, 113, 0.08);
 }
 
 .panel-wide {
@@ -189,8 +196,16 @@ textarea {
   padding: 12px 14px;
   border-radius: 16px;
   border: 1px solid var(--line);
-  background: #fff;
+  background: #151515;
   color: var(--ink);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 1px solid rgba(248, 113, 113, 0.6);
+  border-color: rgba(248, 113, 113, 0.6);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.08);
 }
 
 .checkbox-row {
@@ -220,7 +235,7 @@ button {
 
 .ghost-button {
   border: 1px solid var(--line);
-  background: white;
+  background: #161616;
 }
 
 .alert {
@@ -230,9 +245,9 @@ button {
 }
 
 .alert.error {
-  background: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
+  background: rgba(127, 29, 29, 0.22);
+  color: #fecaca;
+  border: 1px solid rgba(248, 113, 113, 0.24);
 }
 
 .analysis-shell {
@@ -274,8 +289,8 @@ button {
 }
 
 .chip {
-  background: #eef2ff;
-  color: #312e81;
+  background: #2b1111;
+  color: #fecaca;
 }
 
 .chip-wrap {
@@ -313,7 +328,7 @@ button {
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 20px;
-  background: #f8fafc;
+  background: var(--panel-2);
 }
 
 .stats-grid span,
@@ -361,7 +376,7 @@ th {
 .chart-card {
   border: 1px solid var(--line);
   border-radius: 20px;
-  background: white;
+  background: #111111;
   min-height: 320px;
   padding: 8px;
 }
@@ -369,8 +384,8 @@ th {
 .empty-state {
   padding: 18px;
   border-radius: 18px;
-  border: 1px dashed #cbd5e1;
-  background: #f8fafc;
+  border: 1px dashed #3f3f46;
+  background: #121212;
   color: var(--muted);
 }
 
@@ -397,11 +412,17 @@ th {
 }
 
 .chat-bubble.user {
-  background: #dbeafe;
+  background: #2b1111;
 }
 
 .chat-bubble.assistant {
-  background: #ecfeff;
+  background: #151515;
+  border: 1px solid rgba(248, 113, 113, 0.08);
+}
+
+details summary {
+  cursor: pointer;
+  color: #fca5a5;
 }
 
 .chat-bubble p {

@@ -55,29 +55,29 @@ def trim_history(items, limit=40):
 
 def score_to_colors(fraud_score):
     if fraud_score < 30:
-        return {"metric_bg": "#166534", "badge_bg": "#14532d", "font": "white"}
+        return {"metric_bg": "#18181b", "badge_bg": "#27272a", "font": "white"}
     if fraud_score <= 60:
-        return {"metric_bg": "#ca8a04", "badge_bg": "#a16207", "font": "#111827"}
-    return {"metric_bg": "#b91c1c", "badge_bg": "#991b1b", "font": "white"}
+        return {"metric_bg": "#7f1d1d", "badge_bg": "#991b1b", "font": "white"}
+    return {"metric_bg": "#dc2626", "badge_bg": "#ef4444", "font": "white"}
 
 
 def risk_level_to_badge_color(risk_level):
     mapping = {
-        "LOW": ("#166534", "white"),
-        "MEDIUM": ("#ca8a04", "#111827"),
-        "HIGH": ("#ea580c", "white"),
-        "CRITICAL": ("#b91c1c", "white"),
+        "LOW": ("#27272a", "white"),
+        "MEDIUM": ("#7f1d1d", "white"),
+        "HIGH": ("#b91c1c", "white"),
+        "CRITICAL": ("#ef4444", "white"),
     }
-    return mapping.get(risk_level, ("#6b7280", "white"))
+    return mapping.get(risk_level, ("#52525b", "white"))
 
 
 def recommendation_to_banner(rec):
     mapping = {
-        "APPROVE": ("#166534", "white"),
-        "REVIEW": ("#ca8a04", "#111827"),
-        "BLOCK": ("#b91c1c", "white"),
+        "APPROVE": ("#27272a", "white"),
+        "REVIEW": ("#991b1b", "white"),
+        "BLOCK": ("#ef4444", "white"),
     }
-    return mapping.get(rec, ("#6b7280", "white"))
+    return mapping.get(rec, ("#52525b", "white"))
 
 
 def extract_first_json_object(text):
@@ -305,8 +305,8 @@ def make_dashboard(history_items):
         return None
 
     frame = pd.DataFrame(history_items)
-    risk_colors = {"LOW": "#166534", "MEDIUM": "#ca8a04", "HIGH": "#ea580c", "CRITICAL": "#b91c1c"}
-    rec_colors = {"APPROVE": "#166534", "REVIEW": "#ca8a04", "BLOCK": "#b91c1c"}
+    risk_colors = {"LOW": "#27272a", "MEDIUM": "#7f1d1d", "HIGH": "#b91c1c", "CRITICAL": "#ef4444"}
+    rec_colors = {"APPROVE": "#27272a", "REVIEW": "#991b1b", "BLOCK": "#ef4444"}
 
     pie = px.pie(
         frame,
@@ -315,18 +315,26 @@ def make_dashboard(history_items):
         color="risk_level",
         color_discrete_map=risk_colors,
     )
-    pie.update_layout(showlegend=False, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="rgba(0,0,0,0)")
+    pie.update_layout(
+        showlegend=False,
+        margin=dict(l=10, r=10, t=10, b=10),
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e5e7eb"),
+    )
 
     histogram = go.Figure()
-    histogram.add_trace(go.Histogram(x=frame["fraud_score"], nbinsx=20, marker_color="#4338ca"))
-    histogram.add_vline(x=60, line_width=3, line_dash="dash", line_color="#ef4444")
+    histogram.add_trace(go.Histogram(x=frame["fraud_score"], nbinsx=20, marker_color="#b91c1c"))
+    histogram.add_vline(x=60, line_width=3, line_dash="dash", line_color="#fca5a5")
     histogram.update_layout(
         margin=dict(l=10, r=10, t=10, b=10),
         xaxis_title="Fraud Score",
         yaxis_title="Count",
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="white",
+        plot_bgcolor="#111111",
+        font=dict(color="#e5e7eb"),
     )
+    histogram.update_xaxes(gridcolor="#27272a", zerolinecolor="#27272a")
+    histogram.update_yaxes(gridcolor="#27272a", zerolinecolor="#27272a")
 
     scatter = px.scatter(
         frame,
@@ -341,8 +349,11 @@ def make_dashboard(history_items):
         xaxis_title="Amount (USD)",
         yaxis_title="Fraud Score",
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="white",
+        plot_bgcolor="#111111",
+        font=dict(color="#e5e7eb"),
     )
+    scatter.update_xaxes(gridcolor="#27272a", zerolinecolor="#27272a")
+    scatter.update_yaxes(gridcolor="#27272a", zerolinecolor="#27272a")
 
     rec_counts = frame["recommendation"].value_counts().reindex(["APPROVE", "REVIEW", "BLOCK"]).fillna(0)
     bars = go.Figure(
@@ -359,8 +370,11 @@ def make_dashboard(history_items):
         yaxis_title="Recommendation",
         yaxis=dict(categoryorder="array", categoryarray=["APPROVE", "REVIEW", "BLOCK"]),
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="white",
+        plot_bgcolor="#111111",
+        font=dict(color="#e5e7eb"),
     )
+    bars.update_xaxes(gridcolor="#27272a", zerolinecolor="#27272a")
+    bars.update_yaxes(gridcolor="#27272a", zerolinecolor="#27272a")
 
     total_flagged = int(frame["risk_level"].isin(["HIGH", "CRITICAL"]).sum())
     total_blocked = int((frame["recommendation"] == "BLOCK").sum())
