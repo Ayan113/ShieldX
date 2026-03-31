@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ShieldX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Crypto Risk Intelligence</p>
+          <h1>ShieldX</h1>
+          <p class="subtitle">AI-powered crypto fraud detection and compliance triage built for fast investigations.</p>
+        </div>
+        <div class="hero-card">
+          <span>Live analysis</span>
+          <strong>{{ history_count }}</strong>
+          <small>session records tracked in the dashboard</small>
+        </div>
+      </header>
+
+      <nav class="tab-bar">
+        <a href="#single" class="{{ 'is-active' if active_tab == 'single' else '' }}">Single Transaction</a>
+        <a href="#batch" class="{{ 'is-active' if active_tab == 'batch' else '' }}">Batch CSV</a>
+        <a href="#dashboard" class="{{ 'is-active' if active_tab == 'dashboard' else '' }}">Dashboard</a>
+        <a href="#rag" class="{{ 'is-active' if active_tab == 'rag' else '' }}">Fraud Rules Assistant</a>
+      </nav>
+
+      <main class="content-grid">
+        <section id="single" class="panel panel-wide">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Analyzer</p>
+              <h2>Single Transaction Review</h2>
+            </div>
+          </div>
+          <form method="post" action="/analyze" class="form-grid">
+            <label>
+              <span>Transaction ID</span>
+              <input name="transaction_id" value="{{ single_form.transaction_id }}" required>
+            </label>
+            <label>
+              <span>Crypto Type</span>
+              <select name="crypto_type">
+                {% for crypto in ['Bitcoin', 'Ethereum', 'USDT', 'Solana', 'XRP', 'Other'] %}
+                <option value="{{ crypto }}" {{ 'selected' if single_form.crypto_type == crypto else '' }}>{{ crypto }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              <span>Sender Wallet</span>
+              <input name="sender_wallet" value="{{ single_form.sender_wallet }}" required>
+            </label>
+            <label>
+              <span>Receiver Wallet</span>
+              <input name="receiver_wallet" value="{{ single_form.receiver_wallet }}" required>
+            </label>
+            <label>
+              <span>Amount in USD</span>
+              <input name="amount_usd" type="number" min="0" step="0.01" value="{{ single_form.amount_usd }}" required>
+            </label>
+            <label>
+              <span>Transaction Fee</span>
+              <input name="transaction_fee_usd" type="number" min="0" step="0.01" value="{{ single_form.transaction_fee_usd }}" required>
+            </label>
+            <label>
+              <span>Timestamp</span>
+              <input name="timestamp" type="datetime-local" value="{{ single_form.timestamp }}" required>
+            </label>
+            <label>
+              <span>Sender Account Age (days)</span>
+              <input name="sender_account_age_days" type="number" min="0" step="1" value="{{ single_form.sender_account_age_days }}" required>
+            </label>
+            <label>
+              <span>Transactions in Last 24h</span>
+              <input name="transactions_last_24h" type="number" min="0" step="1" value="{{ single_form.transactions_last_24h }}" required>
+            </label>
+            <label class="checkbox-row">
+              <input name="is_cross_border" type="checkbox" {{ 'checked' if single_form.is_cross_border else '' }}>
+              <span>Cross-border transaction</span>
+            </label>
+            <div class="form-actions">
+              <button type="submit">Analyze Transaction</button>
+            </div>
+          </form>
+
+          {% if single_error %}
+          <div class="alert error">{{ single_error }}</div>
+          {% endif %}
+
+          {% if single_result %}
+          <div class="analysis-shell">
+            <div class="score-card" style="background: {{ single_result.colors.metric_bg }}; color: {{ single_result.colors.font }};">
+              <span>Fraud Score</span>
+              <strong>{{ single_result.score }}</strong>
+              <small>0-100 risk scale</small>
+            </div>
+            <div class="badge-row">
+              <span class="pill" style="background: {{ single_result.risk_bg }}; color: {{ single_result.risk_font }};">Risk Level: {{ single_result.analysis.risk_level }}</span>
+              <span class="pill" style="background: {{ single_result.rec_bg }}; color: {{ single_result.rec_font }};">Recommendation: {{ single_result.analysis.recommendation }}</span>
+            </div>
+            <div class="two-col">
+              <div>
+                <h3>Suspicious Indicators</h3>
+                <ul class="signal-list danger">
+                  {% for item in single_result.analysis.fraud_indicators %}
+                  <li>{{ item }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <div>
+                <h3>Legitimate Indicators</h3>
+                <ul class="signal-list safe">
+                  {% for item in single_result.analysis.legitimate_indicators %}
+                  <li>{{ item }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+            <div>
+              <h3>Explanation</h3>
+              <p>{{ single_result.analysis.explanation }}</p>
+            </div>
+            <div>
+              <h3>Similar Fraud Patterns</h3>
+              <div class="chip-wrap">
+                {% for item in single_result.analysis.similar_fraud_patterns %}
+                <span class="chip">{{ item }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </section>
+
+        <section id="batch" class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Batch</p>
+              <h2>CSV Analyzer</h2>
+            </div>
+            <a class="ghost-button" href="/sample.csv">Download Sample CSV</a>
+          </div>
+          <form method="post" action="/batch-analyze" enctype="multipart/form-data" class="stack">
+            <label>
+              <span>Upload a CSV file</span>
+              <input name="csv_file" type="file" accept=".csv" required>
+            </label>
+            <button type="submit">Analyze All Transactions</button>
+          </form>
+
+          {% if batch_error %}
+          <div class="alert error">{{ batch_error }}</div>
+          {% endif %}
+
+          {% if batch_rows %}
+          <div class="table-shell">
+            <h3>Preview</h3>
+            <table>
+              <thead>
+                <tr>
+                  {% for key in batch_rows[0].keys() %}
+                  <th>{{ key }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in batch_rows %}
+                <tr>
+                  {% for value in row.values() %}
+                  <td>{{ value }}</td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% endif %}
+
+          {% if batch_summary %}
+          <div class="stats-grid">
+            <article><span>Flagged</span><strong>{{ batch_summary.total_flagged }}</strong></article>
+            <article><span>Blocked</span><strong>{{ batch_summary.total_blocked }}</strong></article>
+            <article><span>Approved</span><strong>{{ batch_summary.total_approved }}</strong></article>
+            <article><span>Highest Risk</span><strong>{{ batch_summary.highest.transaction_id }}</strong><small>{{ batch_summary.highest.fraud_score }} / {{ batch_summary.highest.risk_level }}</small></article>
+          </div>
+          <div class="table-shell">
+            <h3>Analysis Summary</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Transaction</th>
+                  <th>Amount</th>
+                  <th>Risk</th>
+                  <th>Fraud Score</th>
+                  <th>Recommendation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in batch_summary.rows %}
+                <tr>
+                  <td>{{ row.transaction_id }}</td>
+                  <td>${{ '%.2f'|format(row.amount_usd) }}</td>
+                  <td>{{ row.risk_level }}</td>
+                  <td>{{ row.fraud_score }}</td>
+                  <td>{{ row.recommendation }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% endif %}
+        </section>
+
+        <section id="dashboard" class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Patterns</p>
+              <h2>Fraud Pattern Dashboard</h2>
+            </div>
+            <form method="post" action="/clear-history">
+              <button class="ghost-button" type="submit">Clear Dashboard History</button>
+            </form>
+          </div>
+
+          {% if dashboard %}
+          <div class="stats-grid">
+            <article><span>Total Flagged</span><strong>{{ dashboard.stats.total_flagged }}</strong></article>
+            <article><span>Total Blocked</span><strong>{{ dashboard.stats.total_blocked }}</strong></article>
+            <article><span>Total Approved</span><strong>{{ dashboard.stats.total_approved }}</strong></article>
+            <article><span>Highest Risk</span><strong>{{ dashboard.stats.highest.transaction_id }}</strong><small>{{ dashboard.stats.highest.fraud_score }} / {{ dashboard.stats.highest.risk_level }}</small></article>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-card"><div id="pie-chart"></div></div>
+            <div class="chart-card"><div id="histogram-chart"></div></div>
+            <div class="chart-card"><div id="scatter-chart"></div></div>
+            <div class="chart-card"><div id="bars-chart"></div></div>
+          </div>
+          <div class="table-shell">
+            <h3>Flagged Transactions</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Transaction</th>
+                  <th>Amount</th>
+                  <th>Risk</th>
+                  <th>Fraud Score</th>
+                  <th>Recommendation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in dashboard.flagged_rows %}
+                <tr>
+                  <td>{{ row.transaction_id }}</td>
+                  <td>${{ '%.2f'|format(row.amount_usd) }}</td>
+                  <td>{{ row.risk_level }}</td>
+                  <td>{{ row.fraud_score }}</td>
+                  <td>{{ row.recommendation }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-state">Analyze a single transaction or a CSV batch to populate the dashboard.</div>
+          {% endif %}
+        </section>
+
+        <section id="rag" class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Knowledge</p>
+              <h2>Fraud Rules Assistant</h2>
+            </div>
+            <form method="post" action="/clear-chat">
+              <button class="ghost-button" type="submit">Clear Chat</button>
+            </form>
+          </div>
+
+          {% if rag_error %}
+          <div class="alert error">{{ rag_error }}</div>
+          {% endif %}
+
+          <div class="suggestions">
+            {% for question in suggested_questions %}
+            <form method="post" action="/rag">
+              <input type="hidden" name="question" value="{{ question }}">
+              <button class="suggestion-button" type="submit">{{ question }}</button>
+            </form>
+            {% endfor %}
+          </div>
+
+          <div class="chat-shell">
+            {% if rag_messages %}
+              {% for message in rag_messages %}
+              <article class="chat-bubble {{ message.role }}">
+                <span class="chat-role">{{ message.role }}</span>
+                <p>{{ message.content }}</p>
+                {% if message.sources %}
+                <details>
+                  <summary>Knowledge Sources</summary>
+                  <ul>
+                    {% for source in message.sources %}
+                    <li>{{ source }}</li>
+                    {% endfor %}
+                  </ul>
+                </details>
+                {% endif %}
+              </article>
+              {% endfor %}
+            {% else %}
+              <div class="empty-state">Ask about fraud patterns, detection methods, or compliance requirements.</div>
+            {% endif %}
+          </div>
+
+          <form method="post" action="/rag" class="rag-form">
+            <textarea name="question" rows="4" placeholder="Ask about crypto fraud patterns, compliance rules, or investigation heuristics." required></textarea>
+            <button type="submit">Ask ShieldX</button>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    {% if dashboard %}
+    <script>
+      const chartPayloads = {
+        pie: {{ dashboard.figures.pie|safe }},
+        histogram: {{ dashboard.figures.histogram|safe }},
+        scatter: {{ dashboard.figures.scatter|safe }},
+        bars: {{ dashboard.figures.bars|safe }}
+      };
+      Plotly.newPlot('pie-chart', chartPayloads.pie.data, chartPayloads.pie.layout, {displayModeBar: false, responsive: true});
+      Plotly.newPlot('histogram-chart', chartPayloads.histogram.data, chartPayloads.histogram.layout, {displayModeBar: false, responsive: true});
+      Plotly.newPlot('scatter-chart', chartPayloads.scatter.data, chartPayloads.scatter.layout, {displayModeBar: false, responsive: true});
+      Plotly.newPlot('bars-chart', chartPayloads.bars.data, chartPayloads.bars.layout, {displayModeBar: false, responsive: true});
+    </script>
+    {% endif %}
+  </body>
+</html>
